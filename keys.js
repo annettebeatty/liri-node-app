@@ -12,4 +12,10 @@ exports.spotify = {
   id: process.env.SPOTIFY_ID,
   secret: process.env.SPOTIFY_SECRET
 };
+
+exports.twilio = {
+  sid: process.env.TWILIO_SID,
+  token: process.env.TWILIO_TOKEN
+};
+
 ```

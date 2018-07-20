@@ -23,6 +23,7 @@
     "inquirer": "^6.0.0",
     "node-spotify-api": "^1.0.7",
     "omdb": "^0.8.0",
+    "twilio": "^3.18.0",
     "twitter": "^1.7.1"
   }
 }

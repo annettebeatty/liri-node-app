@@ -8,6 +8,10 @@ var twitter_consumer_key = process.env.TWITTER_CONSUMER_KEY;
 var twitter_consumer_secret = process.env.TWITTER_CONSUMER_SECRET;
 var twitter_access_token = process.env.TWITTER_ACCESS_TOKEN_KEY;
 var twitter_access_token_secrect = process.env.TWITTER_ACCESS_TOKEN_SECRET;
+var twilio_sid = process.env.TWILIO_SID;
+var twilio_token = process.env.TWILIO_TOKEN;
+
+const client = require('twilio')(twilio_sid, twilio_token);
 
 var request = process.argv[2];
 var textfile = "log.txt"
@@ -61,21 +65,24 @@ function twittIt()
 {
     var Twitter = require('twitter');
     
+    // Put this in the logfile
     var string = "node liri.js my-tweets";
     appendIt(textfile, string);
 
     var client = new Twitter({
-    consumer_key: twitter_consumer_key,
-    consumer_secret: twitter_consumer_secret,
-    access_token_key: twitter_access_token,
-    access_token_secret: twitter_access_token_secrect
+        consumer_key: twitter_consumer_key,
+        consumer_secret: twitter_consumer_secret,
+        access_token_key: twitter_access_token,
+        access_token_secret: twitter_access_token_secrect
     });
 
+    // Setting the twitter user to search
     var params = {
         screen_name: '@FridayTheDog1',
         count: 20
     };
 
+    // Grab the twitter feed
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
     if (!error) {
         for (var i=0; i < tweets.length; i++)
@@ -87,6 +94,8 @@ function twittIt()
 }
 
 /*  Spotify section */
+// If the user wants a text preview of the song, they'll get the option
+// Otherwise, the song information will be printed out
 function spotIt(song)
 {
     var Spotify = require('node-spotify-api');
@@ -97,26 +106,95 @@ function spotIt(song)
     });
 
     if (song == null)
-        song = '"The Sign Ace of Base"';
+        song = 'The Sign Ace of Base';
     
+    // Sting for the log file
     var string = "node liri.js spotify-this-song " + '"' + song + '"';
+
+    // Log into log file
     appendIt(textfile, string);
 
-    spotify.search({ type: 'track', query: song }, function(err, data) {    
+    spotify.search({ type: 'track', query: song }, function(err, data) 
+    {    
         if ( err ) {
             console.log('Error occurred: ' + err);
             return;
         }
 
-        for (var i=0; i < data.tracks.items.length; i++)
+        // console.log(data.tracks.items)
+        var allsongs = [];
+        var songStr =[];
+
+        inquirer.prompt([
         {
-            console.log("Artist: ", data.tracks.items[i].artists[0].name);
-            console.log("Song: ", data.tracks.items[i].name);
-            console.log("Preview: ", data.tracks.items[i].preview_url);
-            console.log("Album: ", data.tracks.items[i].album.name);
-            console.log("-----------------------");
+            type: "confirm",
+            message: "\nWould you like to receive a text of a song preview? ",
+            name: "confirm",
+            default: true
         }
-    });
+        ]).then(function(answers) 
+        {
+            var textFlag = false;
+            var numSongs = 0;
+
+            if (answers.confirm)
+            {
+                textFlag = true;
+                numSongs = 5;  // Limiting the number of songs available for preview
+            }
+            else
+                numSongs = data.tracks.items.length;
+
+            for (var i=0; i < numSongs; i++)
+            {
+                var song =
+                {
+                    artist: data.tracks.items[i].artists[0].name,
+                    title: data.tracks.items[i].name,
+                    preview: data.tracks.items[i].preview_url,
+                    album: data.tracks.items[i].album.name
+                }
+
+                // If they don't want a text preview, just print it out
+                if (!textFlag)
+                {
+                    console.log("Artist: ", data.tracks.items[i].artists[0].name);
+                    console.log("Song: ", data.tracks.items[i].name);
+                    console.log("Preview: ", data.tracks.items[i].name);
+                    console.log("Album: ", data.tracks.items[i].album.name);
+                    console.log("-----------------------");
+                }
+                else
+                {
+                    // They do want a preview.  We need to build two arrays.
+                    // One will hold the text string for inquirer 'choice' list
+                    // The other will contain objects of that same string (in order to match) it
+                    // and the preview URL
+
+                    // This one stores inquirer string to match and the preview URL
+                    var song =
+                    {   
+                        preview: data.tracks.items[i].preview_url,
+                        ugly: i + ") Artist: " + data.tracks.items[i].artists[0].name + " - Song: " +
+                        data.tracks.items[i].name +
+                        " - Album: " + data.tracks.items[i].album.name
+                    }
+    
+                    allsongs.push(song);
+    
+                    // This array used for inquirer choice list
+                    songStr.push(i + ") Artist: " + data.tracks.items[i].artists[0].name + " - Song: " +
+                    data.tracks.items[i].name +
+                    " - Album: " + data.tracks.items[i].album.name);
+                }
+            }
+            
+            // *** BEATTY *** should figure out how to do the array with map
+            // Now all songs loaded into array
+            if (textFlag)
+                textIt(allsongs, songStr);
+        }); // End inquirer for song preview
+    }); // End Spotify search
 }
 
 /*  OMDB section */
@@ -182,7 +260,7 @@ function readIt()
 
         // If the code experiences any errors it will log the error to the console.
         if (error) {
-        return console.log(error);
+            return console.log(error);
         }
     
         // We will then print the contents of data
@@ -209,24 +287,30 @@ function readIt()
   });
 }
 
+// This function just appends to the log.txt file
 function appendIt(textFile, string)
 {
     var date = new Date();
     var n = date.toDateString();
     var time = date.toLocaleTimeString();
 
+    // Build the string to log.  Prepend with date/time
+    // so we know when this command was run in case we need to
+    // use the log.txt file for debugging
     string = n + " " + time + " - " + string + "\n";
 
     fs.appendFile(textFile, string, function(err) {
 
         // If an error was experienced we say it.
         if (err) {
-        console.log(err);
+            console.log(err);
         }
     
     });
 }
 
+// This fucntion is run if liri is given no parameters.  It will
+// interactively prompt the user for a command to run.
 function askIt()
 {
     inquirer.prompt([
@@ -241,20 +325,80 @@ function askIt()
         // console.log("askQuestion", answers.liriCommand);
 
         if (answers.liriCommand == "my-tweets" || answers.liriCommand == "do-what-it-says")
-            processIt(answers.liriCommand, null)
+            processIt(answers.liriCommand, null)   // These commands don't pass parameters
         else
         {
+            // Prompt for song or movie to search
             inquirer.prompt([
-                {
-                    name: "param",
-                    message: "Which one?",
-                }
-                ]).then(function(nextAns) {
-                // Need to ask for which one
+            {
+                name: "param",
+                message: "Which one?",
+            }
+            ]).then(function(nextAns) 
+            {
                 // console.log("param ", nextAns.param);
 
+                // Pass the command with the parameter
                 processIt(answers.liriCommand, nextAns.param)
             });
+        }
+    });
+}
+
+// This function will send the preview URL to your phone as a text message
+function textIt(allsongs, songStr)
+{
+    //console.log(allsongs);
+    //console.log(songStr);
+    //console.log("Send text");
+
+    // Give the users a choice from the array we stashed
+    inquirer.prompt([
+    {
+        type: "list",
+        name: "pickedSong",
+        message: "Which song to text preview to your phone? \n",
+        choices: songStr
+    },    // Here we ask the user to confirm.
+    {
+        message: "\nEnter cell number (use format - 8582221111): ",
+        name: "cell",
+    },
+    {
+        type: "confirm",
+        message: "\nAre you sure: ",
+        name: "confirm",
+        default: true
+    }
+    ]).then(function(answers) 
+    {
+        // If they really want the text sent, process it here
+        if (answers.confirm)
+        {
+            // We need to re-match the one they selected by
+            // searching the sister array that has the preview URL
+            for (var i=0; i < allsongs.length; i++)
+            {
+                if (allsongs[i].ugly == answers.pickedSong)
+                {
+                    if (allsongs[i].preview != null)
+                    {
+                        // console.log("match ", allsongs[i].preview);
+                        var msg = allsongs[i].preview;
+
+                        // Send a text
+                        client.messages.create({
+                            body: msg,
+                            from: '+18582951090',
+                            to: '+1' + answers.cell
+                        })
+                        .then(message => console.log(message.sid))
+                        .done();
+                    }
+                    else  
+                        console.log("Preview unavailable for this song.  Try picking another song.");
+                }
+            }
         }
     });
 }
