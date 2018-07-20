@@ -1,4 +1,6 @@
 require("dotenv").config();
+var fs = require("fs");
+var inquirer = require("inquirer");
 
 var spotify_id = process.env.SPOTIFY_ID;
 var spotify_secret = process.env.SPOTIFY_SECRET;
@@ -8,8 +10,15 @@ var twitter_access_token = process.env.TWITTER_ACCESS_TOKEN_KEY;
 var twitter_access_token_secrect = process.env.TWITTER_ACCESS_TOKEN_SECRET;
 
 var request = process.argv[2];
+var textfile = "log.txt"
 
-processIt(request), process.argv[3];
+if (request)
+    processIt(request, process.argv[3]);
+else
+{
+    // Let's go interactive
+    askIt();
+}
 
 function processIt(request, arg1)
 {
@@ -35,6 +44,9 @@ function processIt(request, arg1)
 
         case "do-what-it-says":
         {
+            var string = "node liri.js do-what-it-says ";
+            appendIt(textfile, string);
+
             readIt();
             break;
         }
@@ -49,6 +61,9 @@ function twittIt()
 {
     var Twitter = require('twitter');
     
+    var string = "node liri.js my-tweets";
+    appendIt(textfile, string);
+
     var client = new Twitter({
     consumer_key: twitter_consumer_key,
     consumer_secret: twitter_consumer_secret,
@@ -82,7 +97,10 @@ function spotIt(song)
     });
 
     if (song == null)
-        song = "The Sign Ace of Base"
+        song = '"The Sign Ace of Base"';
+    
+    var string = "node liri.js spotify-this-song " + '"' + song + '"';
+    appendIt(textfile, string);
 
     spotify.search({ type: 'track', query: song }, function(err, data) {    
         if ( err ) {
@@ -107,7 +125,10 @@ function omdbIt(movie)
     var request = require('request');
 
     if (movie == null)
-        movie = "Mr. Nobody";
+        movie = '"Mr. Nobody"';
+    
+    var string = "node liri.js movie-this " + '"' + movie + '"';
+    appendIt(textfile, string);
 
     var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=trilogy";
 
@@ -148,12 +169,15 @@ function omdbIt(movie)
 }
 
 /* Random section */
+/* Reads through the random.txt file and randomly selects */
+/* One action to complete */
 function readIt()
 {
+
     // fs is a core Node package for reading and writing files
     var fs = require("fs");
 
-    // This block of code will read from the "movies.txt" file
+    // This block of code will read from the "random.txt" file
     fs.readFile("random.txt", "utf8", function(error, data) {
 
         // If the code experiences any errors it will log the error to the console.
@@ -162,20 +186,75 @@ function readIt()
         }
     
         // We will then print the contents of data
-        console.log(data);
+        // console.log(data);
     
+        // Remove newlines
+        data = data.replace(/(\r\n|\n|\r)/gm,"");
+
         // Then split it by commas (to make it more readable)
         var dataArr = data.split(",");
+
+        // console.log("length", dataArr.length);
     
-        // We will then re-display the content as an array for later use.
-        for (var i=0; i < dataArr.length; i++)
-        {
-            console.log(dataArr[i], dataArr[i+1]);
-            processIt(dataArr[i], dataArr[i+1]);
-            i++;
-        }
-  
+        // Return a random number to give us an event to process
+        var index = Math.floor(Math.random() * (dataArr.length/2));
+
+        // Index is the number of processable events we have in the random
+        // file.  We'll need to adjust that number based on the fact that 
+        // the array has 2 elements per processable event
+        if (index > 0)
+            index = index * 2;
+
+        processIt(dataArr[index], dataArr[index+1]);
   });
 }
 
+function appendIt(textFile, string)
+{
+    var date = new Date();
+    var n = date.toDateString();
+    var time = date.toLocaleTimeString();
 
+    string = n + " " + time + " - " + string + "\n";
+
+    fs.appendFile(textFile, string, function(err) {
+
+        // If an error was experienced we say it.
+        if (err) {
+        console.log(err);
+        }
+    
+    });
+}
+
+function askIt()
+{
+    inquirer.prompt([
+        {
+          type: "list",
+          name: "liriCommand",
+          message: "Which liri command to run?",
+          choices: ["my-tweets", "spotify-this-song", "movie-this", "do-what-it-says"]
+        }
+      ]).then(function(answers) {
+        // Need to ask for which one
+        // console.log("askQuestion", answers.liriCommand);
+
+        if (answers.liriCommand == "my-tweets" || answers.liriCommand == "do-what-it-says")
+            processIt(answers.liriCommand, null)
+        else
+        {
+            inquirer.prompt([
+                {
+                    name: "param",
+                    message: "Which one?",
+                }
+                ]).then(function(nextAns) {
+                // Need to ask for which one
+                // console.log("param ", nextAns.param);
+
+                processIt(answers.liriCommand, nextAns.param)
+            });
+        }
+    });
+}
