@@ -92,7 +92,7 @@ function twittIt()
     if (!error) {
         for (var i=0; i < tweets.length; i++)
         {
-            console.log(tweets[i].created_at, "-", tweets[i].text);
+            appendIt(textfile, tweets[i].created_at + "-" + tweets[i].text);
         }
     }
     });
@@ -171,11 +171,12 @@ function spotIt(song)
                 // If they don't want a text preview, just print it out
                 if (!textFlag)
                 {
-                    console.log("Artist: ", data.tracks.items[i].artists[0].name);
-                    console.log("Song: ", data.tracks.items[i].name);
-                    console.log("Preview: ", data.tracks.items[i].name);
-                    console.log("Album: ", data.tracks.items[i].album.name);
-                    console.log("-----------------------");
+                    appendIt(textfile, "Artist: " + data.tracks.items[i].artists[0].name);
+                    
+                    appendIt(textfile, "Song: " + data.tracks.items[i].name);
+                    appendIt(textfile, "Preview: " + data.tracks.items[i].name);
+                    appendIt(textfile, "Album: " + data.tracks.items[i].album.name);
+                    appendIt(textfile, "-----------------------");
                 }
                 else
                 {
@@ -238,9 +239,9 @@ function omdbIt(movie)
             // (Note: The syntax below for parsing isn't obvious. Just spend a few moments dissecting it).
             // console.log(body);
             // console.log(body);
-            console.log("The movie title is: ", JSON.parse(body).Title);
-            console.log("The movie's year is: " + JSON.parse(body).Year);
-            console.log("The movie's IMDB rating is: " + JSON.parse(body).imdbRating);
+            appendIt(textfile, "The movie title is: " + JSON.parse(body).Title);
+            appendIt(textfile, "The movie's year is: " + JSON.parse(body).Year);
+            appendIt(textfile, "The movie's IMDB rating is: " + JSON.parse(body).imdbRating);
 
             var ratings = JSON.parse(body).Ratings
 
@@ -248,14 +249,14 @@ function omdbIt(movie)
             for (var i=0; i < ratings.length; i++)
             {
                 if (ratings[i].Source == "Rotten Tomatoes")
-                    console.log(ratings[i].Source, "Rating: ", ratings[i].Value);
+                    appendIt(textfile, ratings[i].Source + "Rating: " + ratings[i].Value);
             }
-            console.log("The movie's country is: " + JSON.parse(body).Country);
-            console.log("The movie's language is: " + JSON.parse(body).Language);
-            console.log("Plot: ", JSON.parse(body).Plot);
+            appendIt(textfile, "The movie's country is: " + JSON.parse(body).Country);
+            appendIt(textfile, "The movie's language is: " + JSON.parse(body).Language);
+            appendIt(textfile, "Plot: " + JSON.parse(body).Plot);
 
             var actors = JSON.parse(body).Actors;
-            console.log("Actors: ", actors);
+            appendIt(textfile, "Actors: " + actors);
             }
         else  
             console.log("Error - Movie: ", movie, " not found.");
@@ -309,6 +310,9 @@ function appendIt(textFile, string)
     var date = new Date();
     var n = date.toDateString();
     var time = date.toLocaleTimeString();
+
+    // Shows user the output
+    console.log(string);
 
     // Build the string to log.  Prepend with date/time
     // so we know when this command was run in case we need to
