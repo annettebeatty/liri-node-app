@@ -24,20 +24,20 @@ If the user requests Tweets, they will receive the last 20 tweets from the pre-d
 
 If the user requests Spotify data, they will have the option to have the music preview URL texted to their cell phone.  If they opt not to get a text, they will receive all Spotify data returned on the song the requested.
     Example: 
-        Artist:  Aerosmith
-        Song:  Walk This Way
-        Preview:  Walk This Way
-        Album:  Toys In The Attic
+    *   Artist:  Aerosmith
+    *   Song:  Walk This Way
+    *   Preview:  Walk This Way
+    *   Album:  Toys In The Attic
 
 If the user requests movie data, the will receive OMDB data.
     Example:
-        The movie title is:  Ant-Man
-        The movie's year is: 2015
-        The movie's IMDB rating is: 7.3
-        Rotten Tomatoes Rating:  82%
-        The movie's country is: USA
-        The movie's language is: English
-        Plot:  Armed with a super-suit with the astonishing ability to shrink in scale but increase in strength, cat burglar Scott Lang must embrace his inner hero and help his mentor, Dr. Hank Pym, plan and pull off a heist that will save the world.
-        Actors:  Paul Rudd, Michael Douglas, Evangeline Lilly, Corey Stoll
+    *   The movie title is:  Ant-Man
+    *   The movie's year is: 2015
+    *   The movie's IMDB rating is: 7.3
+    *   Rotten Tomatoes Rating:  82%
+    *   The movie's country is: USA
+    *   The movie's language is: English
+    *   Plot:  Armed with a super-suit with the astonishing ability to shrink in scale but increase in strength, cat burglar Scott Lang must embrace his inner hero and help his mentor, Dr. Hank Pym, plan and pull off a heist that will save the world.
+    *  Actors:  Paul Rudd, Michael Douglas, Evangeline Lilly, Corey Stoll
 
 If the user requests 'do-what-it-says', the application will read from the random.txt file and randomly chose one action to execute (example: movie-this,Star Wars).
