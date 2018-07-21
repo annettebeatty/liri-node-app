@@ -23,6 +23,7 @@ Users can interact with Liri one of two different ways:
 If the user requests Tweets, they will receive the last 20 tweets from the pre-defined user.
 
 If the user requests Spotify data, they will have the option to have the music preview URL texted to their cell phone.  If they opt not to get a text, they will receive all Spotify data returned on the song the requested.
+
     Example: 
     *   Artist:  Aerosmith
     *   Song:  Walk This Way
@@ -30,6 +31,7 @@ If the user requests Spotify data, they will have the option to have the music p
     *   Album:  Toys In The Attic
 
 If the user requests movie data, the will receive OMDB data.
+
     Example:
     *   The movie title is:  Ant-Man
     *   The movie's year is: 2015
