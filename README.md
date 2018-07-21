@@ -40,6 +40,6 @@ If the user requests movie data, the will receive OMDB data.
     *   The movie's country is: USA
     *   The movie's language is: English
     *   Plot:  Armed with a super-suit with the astonishing ability to shrink in scale but increase in strength, cat burglar Scott Lang must embrace his inner hero and help his mentor, Dr. Hank Pym, plan and pull off a heist that will save the world.
-    *  Actors:  Paul Rudd, Michael Douglas, Evangeline Lilly, Corey Stoll
+    *   Actors:  Paul Rudd, Michael Douglas, Evangeline Lilly, Corey Stoll
 
 If the user requests 'do-what-it-says', the application will read from the random.txt file and randomly chose one action to execute (example: movie-this,Star Wars).
