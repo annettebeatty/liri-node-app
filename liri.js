@@ -16,6 +16,8 @@ const client = require('twilio')(twilio_sid, twilio_token);
 var request = process.argv[2];
 var textfile = "log.txt"
 
+// If they pass an argument to lire, we'll process it.
+// Otherwise, we'll prompt them
 if (request)
     processIt(request, process.argv[3]);
 else
@@ -24,6 +26,7 @@ else
     askIt();
 }
 
+// This function processes the requests
 function processIt(request, arg1)
 {
     switch (request)
@@ -60,7 +63,9 @@ function processIt(request, arg1)
     }
 }
 
-/*  Twitter section */
+/* Twitter section */
+// This will process twitter requests and pull the last
+// 20 tweets from our pre-defined user
 function twittIt()
 {
     var Twitter = require('twitter');
@@ -105,6 +110,7 @@ function spotIt(song)
         secret: spotify_secret
     });
 
+    // Default song
     if (song == null)
         song = 'The Sign Ace of Base';
     
@@ -114,6 +120,7 @@ function spotIt(song)
     // Log into log file
     appendIt(textfile, string);
 
+    // Look in spotify for the song
     spotify.search({ type: 'track', query: song }, function(err, data) 
     {    
         if ( err ) {
@@ -125,6 +132,8 @@ function spotIt(song)
         var allsongs = [];
         var songStr =[];
 
+        // We're going to ask if they're interested in getting a song preview
+        // on their cell phone
         inquirer.prompt([
         {
             type: "confirm",
@@ -137,6 +146,8 @@ function spotIt(song)
             var textFlag = false;
             var numSongs = 0;
 
+            // if they want to get a text, we'll remember and we'll
+            // limit their choices to the first 5 songs
             if (answers.confirm)
             {
                 textFlag = true;
@@ -145,6 +156,8 @@ function spotIt(song)
             else
                 numSongs = data.tracks.items.length;
 
+            // Walking through the results.  If they don't want a text,
+            // we'll print out the results.
             for (var i=0; i < numSongs; i++)
             {
                 var song =
@@ -198,6 +211,8 @@ function spotIt(song)
 }
 
 /*  OMDB section */
+// This processes the movie requests.  It will return movie data for the 
+// specified movie.
 function omdbIt(movie)
 {
     var request = require('request');
@@ -205,6 +220,7 @@ function omdbIt(movie)
     if (movie == null)
         movie = '"Mr. Nobody"';
     
+    // Log this 
     var string = "node liri.js movie-this " + '"' + movie + '"';
     appendIt(textfile, string);
 
@@ -228,6 +244,7 @@ function omdbIt(movie)
 
             var ratings = JSON.parse(body).Ratings
 
+            // Look for the Rotten Tomatoes score
             for (var i=0; i < ratings.length; i++)
             {
                 if (ratings[i].Source == "Rotten Tomatoes")
@@ -251,7 +268,6 @@ function omdbIt(movie)
 /* One action to complete */
 function readIt()
 {
-
     // fs is a core Node package for reading and writing files
     var fs = require("fs");
 
@@ -361,6 +377,7 @@ function textIt(allsongs, songStr)
         choices: songStr
     },    // Here we ask the user to confirm.
     {
+        validate: validatePhone,
         message: "\nEnter cell number (use format - 8582221111): ",
         name: "cell",
     },
@@ -401,4 +418,17 @@ function textIt(allsongs, songStr)
             }
         }
     });
+}
+
+// This is used to validate the phone number is 10-digit number
+function validatePhone(phone)
+{
+    // console.log("Phone = ", phone);
+    phone = phone.replace(/[^0-9]/g, '');
+
+    if(phone.length != 10) { 
+        return "Invalid phone number";
+    } else {
+        return true;
+    }
 }
